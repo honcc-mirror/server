@@ -21,18 +21,15 @@ func cleanupDb() {
 }
 
 func TestMigration(t *testing.T) {
+	t.Cleanup(cleanupDb)
 	db, err := sql.Open("sqlite3", testDbFileName)
 	if err != nil {
-		cleanupDb()
 		t.Fatalf("Could not create test database: %s Received error: %s", testDbFileName, err)
 	}
 
 	usersData := UsersData{db: db}
 	migrateErr := usersData.Migrate()
 	if migrateErr != nil {
-		cleanupDb()
 		t.Fatalf("Could not migrate test database. Received error: %s", migrateErr)
 	}
-
-	cleanupDb()
 }
