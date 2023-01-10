@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 const (
@@ -36,4 +37,29 @@ func (usersData *UsersData) Migrate() error {
 
 	_, err := usersData.db.Exec(query)
 	return err
+}
+
+func (usersData *UsersData) Create(user User) (*User, error) {
+	query := fmt.Sprintf("INSERT INTO %s VALUES (null, ?, ?, ?, ?)", usersTableName)
+	result, err := usersData.db.Exec(
+		query,
+		user.DisplayName,
+		user.Username,
+		user.Key,
+		user.Salt,
+	)
+
+	if err != nil {
+		log.Printf("Could not create new user %#v, received error: %s", user, err)
+		return nil, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		log.Printf("Could not retrieve id for newly created user %#v, received error: %s", user, err)
+		return nil, err
+	}
+
+	user.Id = id
+	return &user, err
 }

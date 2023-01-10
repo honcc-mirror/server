@@ -39,3 +39,29 @@ func TestMigration(test *testing.T) {
 		test.Fatalf("Could not migrate test database. Received error: %s", migrateErr)
 	}
 }
+
+func TestCreate(test *testing.T) {
+	db := setupTestDb(test)
+	usersData := UsersData{db: db}
+	migrateErr := usersData.Migrate()
+	if migrateErr != nil {
+		test.Fatalf("Could not migrate test database")
+	}
+
+	testUser := User{
+		Id:          -1,
+		DisplayName: "Test user",
+		Username:    "test",
+		Key:         "ABC",
+		Salt:        "CDE",
+	}
+
+	createdUser, createErr := usersData.Create(testUser)
+	if createErr != nil {
+		test.Fatalf("Could not create user, received error %s", createErr)
+	}
+
+	if createdUser.Id == testUser.Id {
+		test.Fatalf("Newly created user should not have the invalid value of the test user. Test user id: %d, Created user id: %d", testUser.Id, createdUser.Id)
+	}
+}
