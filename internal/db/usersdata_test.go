@@ -13,16 +13,7 @@ const (
 	testDbFileName = "usersdata_test.db"
 )
 
-func setupTestDb(test *testing.T) *sql.DB {
-	test.Cleanup(cleanupTestDb)
-
-	db, err := sql.Open("sqlite3", testDbFileName)
-	if err != nil {
-		test.Fatalf("Could not create test database: %s Received error: %s", testDbFileName, err)
-	}
-
-	return db
-}
+// Helper methods for setting up and breaking down testing env
 
 func cleanupTestDb() {
 	err := os.Remove(testDbFileName)
@@ -31,8 +22,16 @@ func cleanupTestDb() {
 	}
 }
 
+// Tests
+
 func TestMigration(test *testing.T) {
-	db := setupTestDb(test)
+	test.Cleanup(cleanupTestDb)
+
+	db, err := sql.Open("sqlite3", testDbFileName)
+	if err != nil {
+		test.Fatalf("Could not create test database: %s Received error: %s", testDbFileName, err)
+	}
+
 	usersData := UsersData{db: db}
 	migrateErr := usersData.Migrate()
 	if migrateErr != nil {
@@ -41,7 +40,13 @@ func TestMigration(test *testing.T) {
 }
 
 func TestCreate(test *testing.T) {
-	db := setupTestDb(test)
+	test.Cleanup(cleanupTestDb)
+
+	db, err := sql.Open("sqlite3", testDbFileName)
+	if err != nil {
+		test.Fatalf("Could not create test database: %s Received error: %s", testDbFileName, err)
+	}
+
 	usersData := UsersData{db: db}
 	migrateErr := usersData.Migrate()
 	if migrateErr != nil {
