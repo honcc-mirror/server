@@ -111,6 +111,39 @@ func TestUserFromId(test *testing.T) {
 	}
 }
 
+func TestUserFromIdFail(test *testing.T) {
+	test.Cleanup(cleanupTestDb)
+
+	db, err := sql.Open("sqlite3", testDbFileName)
+	if err != nil {
+		test.Fatalf(`Could not create test database: %s
+			Received error: %s`, testDbFileName, err)
+	}
+
+	usersData := UsersData{db: db}
+	migrateErr := usersData.Migrate()
+	if migrateErr != nil {
+		test.Fatalf("Could not migrate test database")
+	}
+
+	// Should get error from trying to fetch user in empty db
+	_, emptyDbErr := usersData.UserFromId(0)
+	if emptyDbErr == nil {
+		test.Fatalf("Should receive error after trying to retrieve user from empty db")
+	}
+
+	// Should get error from trying to fetch user with wrong id
+	createdUser, createErr := usersData.Create(testUser)
+	if createErr != nil {
+		test.Fatalf("Could not create user, received error %s", createErr)
+	}
+
+	_, wrongIdErr := usersData.UserFromId(createdUser.Id + 1)
+	if wrongIdErr == nil {
+		test.Fatalf("Should receive error after trying to retrieve user with bad id")
+	}
+}
+
 func TestUpdate(test *testing.T) {
 	test.Cleanup(cleanupTestDb)
 
