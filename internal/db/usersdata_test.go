@@ -32,15 +32,14 @@ func cleanupTestDb() {
 	}
 }
 
-// Tests
-
-func TestMigration(test *testing.T) {
+func setupUsersData(test *testing.T) *UsersData {
 	test.Cleanup(cleanupTestDb)
 
 	db, err := sql.Open("sqlite3", testDbFileName)
 	if err != nil {
 		test.Fatalf(`Could not create test database: %s
 			Received error: %s`, testDbFileName, err)
+		return nil
 	}
 
 	usersData := UsersData{db: db}
@@ -48,24 +47,20 @@ func TestMigration(test *testing.T) {
 	if migrateErr != nil {
 		test.Fatalf(`Could not migrate test database.
 			Received error: %s`, migrateErr)
+		return nil
 	}
+
+	return &usersData
+}
+
+// Tests
+
+func TestMigration(test *testing.T) {
+	setupUsersData(test)
 }
 
 func TestCreate(test *testing.T) {
-	test.Cleanup(cleanupTestDb)
-
-	db, err := sql.Open("sqlite3", testDbFileName)
-	if err != nil {
-		test.Fatalf(`Could not create test database: %s
-			Received error: %s`, testDbFileName, err)
-	}
-
-	usersData := UsersData{db: db}
-	migrateErr := usersData.Migrate()
-	if migrateErr != nil {
-		test.Fatalf("Could not migrate test database")
-	}
-
+	usersData := setupUsersData(test)
 	createdUser, createErr := usersData.Create(testUser)
 	if createErr != nil {
 		test.Fatalf("Could not create user, received error %s", createErr)
@@ -80,20 +75,7 @@ func TestCreate(test *testing.T) {
 }
 
 func TestUserFromId(test *testing.T) {
-	test.Cleanup(cleanupTestDb)
-
-	db, err := sql.Open("sqlite3", testDbFileName)
-	if err != nil {
-		test.Fatalf(`Could not create test database: %s
-			Received error: %s`, testDbFileName, err)
-	}
-
-	usersData := UsersData{db: db}
-	migrateErr := usersData.Migrate()
-	if migrateErr != nil {
-		test.Fatalf("Could not migrate test database")
-	}
-
+	usersData := setupUsersData(test)
 	createdUser, createErr := usersData.Create(testUser)
 	if createErr != nil {
 		test.Fatalf("Could not create user, received error %s", createErr)
@@ -112,19 +94,7 @@ func TestUserFromId(test *testing.T) {
 }
 
 func TestUserFromIdFail(test *testing.T) {
-	test.Cleanup(cleanupTestDb)
-
-	db, err := sql.Open("sqlite3", testDbFileName)
-	if err != nil {
-		test.Fatalf(`Could not create test database: %s
-			Received error: %s`, testDbFileName, err)
-	}
-
-	usersData := UsersData{db: db}
-	migrateErr := usersData.Migrate()
-	if migrateErr != nil {
-		test.Fatalf("Could not migrate test database")
-	}
+	usersData := setupUsersData(test)
 
 	// Should get error from trying to fetch user in empty db
 	_, emptyDbErr := usersData.UserFromId(0)
@@ -145,20 +115,7 @@ func TestUserFromIdFail(test *testing.T) {
 }
 
 func TestUpdate(test *testing.T) {
-	test.Cleanup(cleanupTestDb)
-
-	db, err := sql.Open("sqlite3", testDbFileName)
-	if err != nil {
-		test.Fatalf(`Could not create test database: %s
-			Received error: %s`, testDbFileName, err)
-	}
-
-	usersData := UsersData{db: db}
-	migrateErr := usersData.Migrate()
-	if migrateErr != nil {
-		test.Fatalf("Could not migrate test database")
-	}
-
+	usersData := setupUsersData(test)
 	createdUser, createErr := usersData.Create(testUser)
 	if createErr != nil {
 		test.Fatalf("Could not create user, received error %s", createErr)
@@ -186,20 +143,7 @@ func TestUpdate(test *testing.T) {
 }
 
 func TestUpdateFail(test *testing.T) {
-	test.Cleanup(cleanupTestDb)
-
-	db, err := sql.Open("sqlite3", testDbFileName)
-	if err != nil {
-		test.Fatalf(`Could not create test database: %s
-			Received error: %s`, testDbFileName, err)
-	}
-
-	usersData := UsersData{db: db}
-	migrateErr := usersData.Migrate()
-	if migrateErr != nil {
-		test.Fatalf("Could not migrate test database")
-	}
-
+	usersData := setupUsersData(test)
 	createdUser, createErr := usersData.Create(testUser)
 	if createErr != nil {
 		test.Fatalf("Could not create user, received error %s", createErr)
@@ -221,20 +165,7 @@ func TestUpdateFail(test *testing.T) {
 }
 
 func TestDelete(test *testing.T) {
-	test.Cleanup(cleanupTestDb)
-
-	db, err := sql.Open("sqlite3", testDbFileName)
-	if err != nil {
-		test.Fatalf(`Could not create test database: %s
-			Received error: %s`, testDbFileName, err)
-	}
-
-	usersData := UsersData{db: db}
-	migrateErr := usersData.Migrate()
-	if migrateErr != nil {
-		test.Fatalf("Could not migrate test database")
-	}
-
+	usersData := setupUsersData(test)
 	createdUser, createErr := usersData.Create(testUser)
 	if createErr != nil {
 		test.Fatalf("Could not create user, received error %s", createErr)
