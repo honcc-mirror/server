@@ -13,6 +13,16 @@ const (
 	testDbFileName = "usersdata_test.db"
 )
 
+var (
+	testUser = User{
+		Id:          -1,
+		DisplayName: "Test user",
+		Username:    "test",
+		Key:         "ABC",
+		Salt:        "CDE",
+	}
+)
+
 // Helper methods for setting up and breaking down testing env
 
 func cleanupTestDb() {
@@ -53,14 +63,6 @@ func TestCreate(test *testing.T) {
 		test.Fatalf("Could not migrate test database")
 	}
 
-	testUser := User{
-		Id:          -1,
-		DisplayName: "Test user",
-		Username:    "test",
-		Key:         "ABC",
-		Salt:        "CDE",
-	}
-
 	createdUser, createErr := usersData.Create(testUser)
 	if createErr != nil {
 		test.Fatalf("Could not create user, received error %s", createErr)
@@ -68,5 +70,34 @@ func TestCreate(test *testing.T) {
 
 	if createdUser.Id == testUser.Id {
 		test.Fatalf("Newly created user should not have the invalid value of the test user. Test user id: %d, Created user id: %d", testUser.Id, createdUser.Id)
+	}
+}
+
+func TestUserFromId(test *testing.T) {
+	test.Cleanup(cleanupTestDb)
+
+	db, err := sql.Open("sqlite3", testDbFileName)
+	if err != nil {
+		test.Fatalf("Could not create test database: %s Received error: %s", testDbFileName, err)
+	}
+
+	usersData := UsersData{db: db}
+	migrateErr := usersData.Migrate()
+	if migrateErr != nil {
+		test.Fatalf("Could not migrate test database")
+	}
+
+	createdUser, createErr := usersData.Create(testUser)
+	if createErr != nil {
+		test.Fatalf("Could not create user, received error %s", createErr)
+	}
+
+	returnedUser, returnedErr := usersData.UserFromId(createdUser.Id)
+	if returnedErr != nil {
+		test.Fatalf("Could not read user with id: %s", returnedErr)
+	}
+
+	if *returnedUser != *createdUser {
+		test.Fatalf("Received user data differs from expected input user data.\nIn user data: %#v\nOut user data: %#v", createdUser, returnedUser)
 	}
 }
