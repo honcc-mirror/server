@@ -185,6 +185,41 @@ func TestUpdate(test *testing.T) {
 	}
 }
 
+func TestUpdateFail(test *testing.T) {
+	test.Cleanup(cleanupTestDb)
+
+	db, err := sql.Open("sqlite3", testDbFileName)
+	if err != nil {
+		test.Fatalf(`Could not create test database: %s
+			Received error: %s`, testDbFileName, err)
+	}
+
+	usersData := UsersData{db: db}
+	migrateErr := usersData.Migrate()
+	if migrateErr != nil {
+		test.Fatalf("Could not migrate test database")
+	}
+
+	createdUser, createErr := usersData.Create(testUser)
+	if createErr != nil {
+		test.Fatalf("Could not create user, received error %s", createErr)
+	}
+
+	// Should not be able to update user with an invalid id
+	invalidModifiedUser := User{
+		Id:          createdUser.Id + 1,
+		DisplayName: "Modified user",
+		Username:    "modified_user",
+		Key:         "JKL",
+		Salt:        "XYZ",
+	}
+
+	_, invalidUpdateErr := usersData.Update(invalidModifiedUser)
+	if invalidUpdateErr == nil {
+		test.Fatalf("Should not be able to update user with an invalid id")
+	}
+}
+
 func TestDelete(test *testing.T) {
 	test.Cleanup(cleanupTestDb)
 
