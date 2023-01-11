@@ -53,7 +53,7 @@ func setupUsersData(test *testing.T) *UsersData {
 	return &usersData
 }
 
-func createTestUser(test *testing.T, usersData UsersData) *User {
+func createTestUser(test *testing.T, usersData *UsersData) *User {
 	createdUser, createErr := usersData.Create(testUser)
 	if createErr != nil {
 		test.Fatalf("Could not create user, received error %s", createErr)
@@ -79,12 +79,12 @@ func TestMigration(test *testing.T) {
 
 func TestCreate(test *testing.T) {
 	usersData := setupUsersData(test)
-	createTestUser(test, *usersData)
+	createTestUser(test, usersData)
 }
 
 func TestUserFromId(test *testing.T) {
 	usersData := setupUsersData(test)
-	createdUser := createTestUser(test, *usersData)
+	createdUser := createTestUser(test, usersData)
 	returnedUser, returnedErr := usersData.UserFromId(createdUser.Id)
 	if returnedErr != nil {
 		test.Fatalf("Could not read user with id: %s", returnedErr)
@@ -107,7 +107,7 @@ func TestUserFromIdFail(test *testing.T) {
 	}
 
 	// Should get error from trying to fetch user with wrong id
-	createdUser := createTestUser(test, *usersData)
+	createdUser := createTestUser(test, usersData)
 	_, wrongIdErr := usersData.UserFromId(createdUser.Id + 1)
 	if wrongIdErr == nil {
 		test.Fatalf("Should receive error after trying to retrieve user with bad id")
@@ -116,7 +116,7 @@ func TestUserFromIdFail(test *testing.T) {
 
 func TestUpdate(test *testing.T) {
 	usersData := setupUsersData(test)
-	createdUser := createTestUser(test, *usersData)
+	createdUser := createTestUser(test, usersData)
 	modifiedUser := User{
 		Id:          createdUser.Id,
 		DisplayName: "Modified user",
@@ -140,7 +140,7 @@ func TestUpdate(test *testing.T) {
 
 func TestUpdateFail(test *testing.T) {
 	usersData := setupUsersData(test)
-	createdUser := createTestUser(test, *usersData)
+	createdUser := createTestUser(test, usersData)
 
 	// Should not be able to update user with an invalid id
 	invalidModifiedUser := User{
@@ -159,7 +159,7 @@ func TestUpdateFail(test *testing.T) {
 
 func TestDelete(test *testing.T) {
 	usersData := setupUsersData(test)
-	createdUser := createTestUser(test, *usersData)
+	createdUser := createTestUser(test, usersData)
 	deleteErr := usersData.Delete(createdUser.Id)
 	if deleteErr != nil {
 		test.Fatalf("Could not delete user, received error %s", deleteErr)
