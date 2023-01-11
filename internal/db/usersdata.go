@@ -64,16 +64,19 @@ func (usersData *UsersData) Create(user User) (*User, error) {
 	return &user, err
 }
 
-func (usersData *UsersData) UserFromId(userId int64) (*User, error) {
-	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", usersTableName, idColumn)
-	row := usersData.db.QueryRow(query, userId)
-
+func scanRowToUser(row *sql.Row) (*User, error) {
 	var user User
 	err := row.Scan(&user.Id, &user.DisplayName, &user.Username, &user.Key, &user.Salt)
 	if err != nil {
-		log.Printf("Could not retrieve user with id %d: %s", userId, err)
+		log.Printf("Could not retrieve user: %s", err)
 		return nil, err
 	}
 
 	return &user, err
+}
+
+func (usersData *UsersData) UserFromId(userId int64) (*User, error) {
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", usersTableName, idColumn)
+	row := usersData.db.QueryRow(query, userId)
+	return scanRowToUser(row)
 }
