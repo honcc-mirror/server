@@ -106,7 +106,7 @@ func (usersData *UsersData) Update(user User) (*User, error) {
 	}
 
 	rowsAffected, rowsAffectedErr := result.RowsAffected()
-	if err != nil {
+	if rowsAffectedErr != nil {
 		log.Printf(`Could not retrieve rows affected for user update.
             User: %#v
             Received error: %s`, user, rowsAffectedErr)
@@ -114,7 +114,7 @@ func (usersData *UsersData) Update(user User) (*User, error) {
 	}
 
 	if rowsAffected == 0 {
-		log.Printf(`No rows affected were affected in user update.
+		log.Printf(`No rows were affected in user update.
             User with id likely does not exist.
             User: %#v`, user)
 		return nil, sql.ErrNoRows
