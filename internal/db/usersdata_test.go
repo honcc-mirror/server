@@ -101,3 +101,43 @@ func TestUserFromId(test *testing.T) {
 		test.Fatalf("Received user data differs from expected input user data.\nIn user data: %#v\nOut user data: %#v", createdUser, returnedUser)
 	}
 }
+
+func TestUpdate(test *testing.T) {
+	test.Cleanup(cleanupTestDb)
+
+	db, err := sql.Open("sqlite3", testDbFileName)
+	if err != nil {
+		test.Fatalf("Could not create test database: %s Received error: %s", testDbFileName, err)
+	}
+
+	usersData := UsersData{db: db}
+	migrateErr := usersData.Migrate()
+	if migrateErr != nil {
+		test.Fatalf("Could not migrate test database")
+	}
+
+	createdUser, createErr := usersData.Create(testUser)
+	if createErr != nil {
+		test.Fatalf("Could not create user, received error %s", createErr)
+	}
+
+	modifiedUser := User{
+		Id:          createdUser.Id,
+		DisplayName: "Modified user",
+		Username:    "modified_user",
+		Key:         "JKL",
+		Salt:        "XYZ",
+	}
+
+	updatedUser, updateErr := usersData.Update(modifiedUser)
+	if updateErr != nil {
+		test.Fatalf("Could not update user, received error %s", updateErr)
+	}
+
+	if *updatedUser != modifiedUser {
+		test.Fatalf(`Updated user data differs from expected.
+			Initial user data: %#v
+			Expected user data: %#v
+			Out user data: %#v`, createdUser, modifiedUser, updatedUser)
+	}
+}

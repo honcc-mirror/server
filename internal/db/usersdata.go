@@ -80,3 +80,43 @@ func (usersData *UsersData) UserFromId(userId int64) (*User, error) {
 	row := usersData.db.QueryRow(query, userId)
 	return scanRowToUser(row)
 }
+
+func (usersData *UsersData) Update(user User) (*User, error) {
+	query := fmt.Sprintf(`
+        UPDATE %s SET %s = ?, %s = ?, %s = ?, %s = ?
+        WHERE %s = ?`,
+		usersTableName,
+		displayNameColumn,
+		userNameColumn,
+		keyColumn,
+		saltColumn,
+		idColumn)
+	result, err := usersData.db.Exec(query,
+		user.DisplayName,
+		user.Username,
+		user.Key,
+		user.Salt,
+		user.Id)
+	if err != nil {
+		log.Printf(`Could not update user: %#v
+            Received error: %s`, user, err)
+		return nil, err
+	}
+
+	rowsAffected, rowsAffectedErr := result.RowsAffected()
+	if err != nil {
+		log.Printf(`Could not retrieve rows affected for user update.
+            User: %#v
+            Received error: %s`, user, rowsAffectedErr)
+		return nil, rowsAffectedErr
+	}
+
+	if rowsAffected == 0 {
+		log.Printf(`No rows affected were affected in user update.
+            User with id likely does not exist.
+            User: %#v`, user)
+		return nil, sql.ErrNoRows
+	}
+
+	return &user, nil
+}
