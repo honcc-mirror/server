@@ -151,3 +151,29 @@ func TestUpdate(test *testing.T) {
 			Out user data: %#v`, createdUser, modifiedUser, updatedUser)
 	}
 }
+
+func TestDelete(test *testing.T) {
+	test.Cleanup(cleanupTestDb)
+
+	db, err := sql.Open("sqlite3", testDbFileName)
+	if err != nil {
+		test.Fatalf(`Could not create test database: %s
+			Received error: %s`, testDbFileName, err)
+	}
+
+	usersData := UsersData{db: db}
+	migrateErr := usersData.Migrate()
+	if migrateErr != nil {
+		test.Fatalf("Could not migrate test database")
+	}
+
+	createdUser, createErr := usersData.Create(testUser)
+	if createErr != nil {
+		test.Fatalf("Could not create user, received error %s", createErr)
+	}
+
+	deleteErr := usersData.Delete(createdUser.Id)
+	if deleteErr != nil {
+		test.Fatalf("Could not delete user, received error %s", deleteErr)
+	}
+}

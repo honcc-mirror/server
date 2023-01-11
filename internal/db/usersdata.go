@@ -122,3 +122,29 @@ func (usersData *UsersData) Update(user User) (*User, error) {
 
 	return &user, nil
 }
+
+func (usersData *UsersData) Delete(userId int64) error {
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", usersTableName, idColumn)
+	result, err := usersData.db.Exec(query, userId)
+	if err != nil {
+		log.Printf(`Could not delete user with id: %d
+            Received error: %s`, userId, err)
+		return err
+	}
+
+	rowsAffected, rowsAffectedErr := result.RowsAffected()
+	if rowsAffectedErr != nil {
+		log.Printf(`Could not retrieve rows affected for user delete.
+            User id: %d
+            Received error: %s`, userId, rowsAffectedErr)
+		return rowsAffectedErr
+	}
+
+	if rowsAffected == 0 {
+		log.Printf(`No rows were affected in user update.
+            User with id "%d" likely does not exist.`, userId)
+		return rowsAffectedErr
+	}
+
+	return nil
+}
