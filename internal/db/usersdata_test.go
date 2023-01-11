@@ -39,13 +39,15 @@ func TestMigration(test *testing.T) {
 
 	db, err := sql.Open("sqlite3", testDbFileName)
 	if err != nil {
-		test.Fatalf("Could not create test database: %s Received error: %s", testDbFileName, err)
+		test.Fatalf(`Could not create test database: %s
+			Received error: %s`, testDbFileName, err)
 	}
 
 	usersData := UsersData{db: db}
 	migrateErr := usersData.Migrate()
 	if migrateErr != nil {
-		test.Fatalf("Could not migrate test database. Received error: %s", migrateErr)
+		test.Fatalf(`Could not migrate test database.
+			Received error: %s`, migrateErr)
 	}
 }
 
@@ -54,7 +56,8 @@ func TestCreate(test *testing.T) {
 
 	db, err := sql.Open("sqlite3", testDbFileName)
 	if err != nil {
-		test.Fatalf("Could not create test database: %s Received error: %s", testDbFileName, err)
+		test.Fatalf(`Could not create test database: %s
+			Received error: %s`, testDbFileName, err)
 	}
 
 	usersData := UsersData{db: db}
@@ -69,7 +72,10 @@ func TestCreate(test *testing.T) {
 	}
 
 	if createdUser.Id == testUser.Id {
-		test.Fatalf("Newly created user should not have the invalid value of the test user. Test user id: %d, Created user id: %d", testUser.Id, createdUser.Id)
+		test.Fatalf(`Newly created user has invalid id value.
+			New user should have a value different to the input test user.
+			Test user id: %d
+			Created user id: %d`, testUser.Id, createdUser.Id)
 	}
 }
 
@@ -78,7 +84,8 @@ func TestUserFromId(test *testing.T) {
 
 	db, err := sql.Open("sqlite3", testDbFileName)
 	if err != nil {
-		test.Fatalf("Could not create test database: %s Received error: %s", testDbFileName, err)
+		test.Fatalf(`Could not create test database: %s
+			Received error: %s`, testDbFileName, err)
 	}
 
 	usersData := UsersData{db: db}
@@ -98,7 +105,9 @@ func TestUserFromId(test *testing.T) {
 	}
 
 	if *returnedUser != *createdUser {
-		test.Fatalf("Received user data differs from expected input user data.\nIn user data: %#v\nOut user data: %#v", createdUser, returnedUser)
+		test.Fatalf(`Received user data differs from expected input user data.
+			In user data: %#v
+			Out user data: %#v`, createdUser, returnedUser)
 	}
 }
 
@@ -107,7 +116,8 @@ func TestUpdate(test *testing.T) {
 
 	db, err := sql.Open("sqlite3", testDbFileName)
 	if err != nil {
-		test.Fatalf("Could not create test database: %s Received error: %s", testDbFileName, err)
+		test.Fatalf(`Could not create test database: %s
+			Received error: %s`, testDbFileName, err)
 	}
 
 	usersData := UsersData{db: db}

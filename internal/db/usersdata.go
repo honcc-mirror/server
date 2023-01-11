@@ -50,13 +50,15 @@ func (usersData *UsersData) Create(user User) (*User, error) {
 	)
 
 	if err != nil {
-		log.Printf("Could not create new user %#v, received error: %s", user, err)
+		log.Printf(`Could not create new user %#v.
+            Received error: %s`, user, err)
 		return nil, err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		log.Printf("Could not retrieve id for newly created user %#v, received error: %s", user, err)
+		log.Printf(`Could not retrieve id for newly created user %#v.
+            Received error: %s`, user, err)
 		return nil, err
 	}
 
