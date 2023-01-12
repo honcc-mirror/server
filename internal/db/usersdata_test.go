@@ -165,3 +165,14 @@ func TestDelete(test *testing.T) {
 		test.Fatalf("Could not delete user, received error %s", deleteErr)
 	}
 }
+
+func TestDeleteFail(test *testing.T) {
+	usersData := setupUsersData(test)
+	createdUser := createTestUser(test, usersData)
+
+	// Should not be able to delete a user using an invalid id
+	invalidIdErr := usersData.Delete(createdUser.Id + 1)
+	if invalidIdErr == nil {
+		test.Fatalf("Should not be able to delete user with invalid id")
+	}
+}

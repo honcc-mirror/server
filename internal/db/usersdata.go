@@ -143,7 +143,7 @@ func (usersData *UsersData) Delete(userId int64) error {
 	if rowsAffected == 0 {
 		log.Printf(`No rows were affected in user update.
             User with id "%d" likely does not exist.`, userId)
-		return rowsAffectedErr
+		return sql.ErrNoRows
 	}
 
 	return nil
