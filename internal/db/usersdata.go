@@ -6,20 +6,32 @@ import (
 	"log"
 )
 
-const (
-	usersTableName    = "users"
-	idColumn          = "id"
-	displayNameColumn = "displayname"
-	userNameColumn    = "username"
-	keyColumn         = "key"
-	saltColumn        = "salt"
-)
+const usersTableName = "users"
+
+type usersDataTableColumns struct {
+	Id          string
+	Displayname string
+	Username    string
+	Key         string
+	Salt        string
+}
+
+func newUsersDataTableColumns() usersDataTableColumns {
+	return usersDataTableColumns{
+		Id:          "id",
+		Displayname: "displayname",
+		Username:    "username",
+		Key:         "key",
+		Salt:        "salt",
+	}
+}
 
 type UsersData struct {
 	db *sql.DB
 }
 
 func (usersData *UsersData) Migrate() error {
+	columns := newUsersDataTableColumns()
 	query := fmt.Sprintf(`
         CREATE TABLE IF NOT EXISTS %s (
             %s  INTEGER     PRIMARY KEY AUTOINCREMENT,
@@ -29,11 +41,11 @@ func (usersData *UsersData) Migrate() error {
             %s  TEXT        NOT NULL
         );
     `, usersTableName,
-		idColumn,
-		displayNameColumn,
-		userNameColumn,
-		keyColumn,
-		saltColumn)
+		columns.Id,
+		columns.Displayname,
+		columns.Username,
+		columns.Key,
+		columns.Salt)
 
 	_, err := usersData.db.Exec(query)
 	return err
@@ -78,21 +90,23 @@ func scanRowToUser(row *sql.Row) (*User, error) {
 }
 
 func (usersData *UsersData) UserFromId(userId int64) (*User, error) {
-	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", usersTableName, idColumn)
+	columns := newUsersDataTableColumns()
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", usersTableName, columns.Id)
 	row := usersData.db.QueryRow(query, userId)
 	return scanRowToUser(row)
 }
 
 func (usersData *UsersData) Update(user User) (*User, error) {
+	columns := newUsersDataTableColumns()
 	query := fmt.Sprintf(`
         UPDATE %s SET %s = ?, %s = ?, %s = ?, %s = ?
         WHERE %s = ?`,
 		usersTableName,
-		displayNameColumn,
-		userNameColumn,
-		keyColumn,
-		saltColumn,
-		idColumn)
+		columns.Displayname,
+		columns.Username,
+		columns.Key,
+		columns.Salt,
+		columns.Id)
 	result, err := usersData.db.Exec(query,
 		user.DisplayName,
 		user.Username,
@@ -124,7 +138,8 @@ func (usersData *UsersData) Update(user User) (*User, error) {
 }
 
 func (usersData *UsersData) Delete(userId int64) error {
-	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", usersTableName, idColumn)
+	columns := newUsersDataTableColumns()
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", usersTableName, columns.Id)
 	result, err := usersData.db.Exec(query, userId)
 	if err != nil {
 		log.Printf(`Could not delete user with id: %d
