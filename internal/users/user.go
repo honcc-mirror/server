@@ -1,4 +1,4 @@
-package db
+package users
 
 type User struct {
 	Id          int64
