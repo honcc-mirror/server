@@ -1,7 +1,6 @@
 package locations
 
 import (
-	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -13,24 +12,31 @@ const (
 	Database LocationEnum = "database"
 )
 
-const appRootDirName = "honcc"
-
 var relativeLocations = map[LocationEnum]string{
 	Database: "data/honcc_0.0.1.db",
 }
 
-func Get(location LocationEnum) (string, error) {
+var locations = map[LocationEnum]string{}
+
+const appRootDirName = "honcc"
+
+func initLocations() {
+	if len(locations) != 0 {
+		return
+	}
+
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatalf("Could not fetch user home dir...")
-		return homeDir, nil
+		return
 	}
 
-	relLocation := relativeLocations[location]
-	if relLocation == "" {
-		return relLocation, errors.New("unknown location to get")
+	for name, relLocation := range relativeLocations {
+		locations[name] = filepath.Join(homeDir, appRootDirName, relLocation)
 	}
+}
 
-	locationPath := filepath.Join(homeDir, appRootDirName, relLocation)
-	return locationPath, nil
+func Get(location LocationEnum) string {
+	initLocations()
+	return locations[location]
 }

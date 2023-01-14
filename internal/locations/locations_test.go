@@ -12,15 +12,14 @@ func TestGet(t *testing.T) {
 		t.Fatalf("Could not fetch user home dir, received error: %s", err)
 	}
 
-	expectedLocation := filepath.Join(homeDir, appRootDirName, relativeLocations[Database])
-	location, err := Get(Database)
-	if err != nil {
-		t.Fatalf("Could not acquire location, received error: %s", err)
-	}
+	for locationName, relLocationPath := range relativeLocations {
+		expectedLocation := filepath.Join(homeDir, appRootDirName, relLocationPath)
+		location := Get(locationName)
 
-	if location != expectedLocation {
-		t.Fatalf(`Received unexpected location.
-			Received: %s
-			Expected: %s`, location, expectedLocation)
+		if location != expectedLocation {
+			t.Fatalf(`Received unexpected location.
+				Received: %s
+				Expected: %s`, location, expectedLocation)
+		}
 	}
 }
