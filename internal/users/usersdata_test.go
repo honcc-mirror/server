@@ -1,17 +1,16 @@
 package users
 
 import (
-	"database/sql"
 	"log"
 	"os"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
+
+	"honcc/server/internal/db"
 )
 
-const (
-	testDbFileName = "usersdata_test.db"
-)
+const testDbFileName = "usersdata_test.db"
 
 var (
 	testUser = User{
@@ -35,14 +34,15 @@ func cleanupTestDb() {
 func setupUsersData(test *testing.T) *UsersData {
 	test.Cleanup(cleanupTestDb)
 
-	db, err := sql.Open("sqlite3", testDbFileName)
+	backend := db.SQLiteBackend{}
+	err := backend.Open(testDbFileName)
 	if err != nil {
 		test.Fatalf(`Could not create test database: %s
 			Received error: %s`, testDbFileName, err)
 		return nil
 	}
 
-	usersData := UsersData{db: db}
+	usersData := UsersData{backend: &backend}
 	migrateErr := usersData.Migrate()
 	if migrateErr != nil {
 		test.Fatalf(`Could not migrate test database.

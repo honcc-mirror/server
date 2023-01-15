@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+
+	"honcc/server/internal/db"
 )
 
 const usersTableName = "users"
@@ -27,7 +29,7 @@ func newUsersDataTableColumns() usersDataTableColumns {
 }
 
 type UsersData struct {
-	db *sql.DB
+	backend db.DBBackend
 }
 
 func (usersData *UsersData) Migrate() error {
@@ -47,13 +49,13 @@ func (usersData *UsersData) Migrate() error {
 		columns.Key,
 		columns.Salt)
 
-	_, err := usersData.db.Exec(query)
+	_, err := usersData.backend.DB().Exec(query)
 	return err
 }
 
 func (usersData *UsersData) Create(user User) (*User, error) {
 	query := fmt.Sprintf("INSERT INTO %s VALUES (null, ?, ?, ?, ?)", usersTableName)
-	result, err := usersData.db.Exec(
+	result, err := usersData.backend.DB().Exec(
 		query,
 		user.DisplayName,
 		user.Username,
@@ -92,7 +94,7 @@ func scanRowToUser(row *sql.Row) (*User, error) {
 func (usersData *UsersData) UserFromId(userId int64) (*User, error) {
 	columns := newUsersDataTableColumns()
 	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", usersTableName, columns.Id)
-	row := usersData.db.QueryRow(query, userId)
+	row := usersData.backend.DB().QueryRow(query, userId)
 	return scanRowToUser(row)
 }
 
@@ -107,7 +109,7 @@ func (usersData *UsersData) Update(user User) (*User, error) {
 		columns.Key,
 		columns.Salt,
 		columns.Id)
-	result, err := usersData.db.Exec(query,
+	result, err := usersData.backend.DB().Exec(query,
 		user.DisplayName,
 		user.Username,
 		user.Key,
@@ -140,7 +142,7 @@ func (usersData *UsersData) Update(user User) (*User, error) {
 func (usersData *UsersData) Delete(userId int64) error {
 	columns := newUsersDataTableColumns()
 	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", usersTableName, columns.Id)
-	result, err := usersData.db.Exec(query, userId)
+	result, err := usersData.backend.DB().Exec(query, userId)
 	if err != nil {
 		log.Printf(`Could not delete user with id: %d
             Received error: %s`, userId, err)
