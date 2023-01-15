@@ -11,20 +11,18 @@ import (
 const usersTableName = "users"
 
 type usersDataTableColumns struct {
-	Id          string
-	Displayname string
-	Username    string
-	Key         string
-	Salt        string
+	Id             string
+	Displayname    string
+	Username       string
+	HashedPassword string
 }
 
 func newUsersDataTableColumns() usersDataTableColumns {
 	return usersDataTableColumns{
-		Id:          "id",
-		Displayname: "displayname",
-		Username:    "username",
-		Key:         "key",
-		Salt:        "salt",
+		Id:             "id",
+		Displayname:    "displayname",
+		Username:       "username",
+		HashedPassword: "hashedpassword",
 	}
 }
 
@@ -39,28 +37,25 @@ func (usersData *UsersData) Migrate() error {
             %s  INTEGER     PRIMARY KEY AUTOINCREMENT,
             %s  TEXT,
             %s  TEXT        NOT NULL UNIQUE,
-            %s  TEXT        NOT NULL,
-            %s  TEXT        NOT NULL
+            %s  TEXT
         );
     `, usersTableName,
 		columns.Id,
 		columns.Displayname,
 		columns.Username,
-		columns.Key,
-		columns.Salt)
+		columns.HashedPassword)
 
 	_, err := usersData.backend.DB().Exec(query)
 	return err
 }
 
 func (usersData *UsersData) Create(user User) (*User, error) {
-	query := fmt.Sprintf("INSERT INTO %s VALUES (null, ?, ?, ?, ?)", usersTableName)
+	query := fmt.Sprintf("INSERT INTO %s VALUES (null, ?, ?, ?)", usersTableName)
 	result, err := usersData.backend.DB().Exec(
 		query,
 		user.DisplayName,
 		user.Username,
-		user.Key,
-		user.Salt,
+		user.HashedPassword,
 	)
 
 	if err != nil {
@@ -82,7 +77,7 @@ func (usersData *UsersData) Create(user User) (*User, error) {
 
 func scanRowToUser(row *sql.Row) (*User, error) {
 	var user User
-	err := row.Scan(&user.Id, &user.DisplayName, &user.Username, &user.Key, &user.Salt)
+	err := row.Scan(&user.Id, &user.DisplayName, &user.Username, &user.HashedPassword)
 	if err != nil {
 		log.Printf("Could not retrieve user: %s", err)
 		return nil, err
@@ -101,19 +96,17 @@ func (usersData *UsersData) UserFromId(userId int64) (*User, error) {
 func (usersData *UsersData) Update(user User) (*User, error) {
 	columns := newUsersDataTableColumns()
 	query := fmt.Sprintf(`
-        UPDATE %s SET %s = ?, %s = ?, %s = ?, %s = ?
+        UPDATE %s SET %s = ?, %s = ?, %s = ?
         WHERE %s = ?`,
 		usersTableName,
 		columns.Displayname,
 		columns.Username,
-		columns.Key,
-		columns.Salt,
+		columns.HashedPassword,
 		columns.Id)
 	result, err := usersData.backend.DB().Exec(query,
 		user.DisplayName,
 		user.Username,
-		user.Key,
-		user.Salt,
+		user.HashedPassword,
 		user.Id)
 	if err != nil {
 		log.Printf(`Could not update user: %#v

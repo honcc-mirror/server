@@ -14,11 +14,10 @@ const testDbFileName = "usersdata_test.db"
 
 var (
 	testUser = User{
-		Id:          -1,
-		DisplayName: "Test user",
-		Username:    "test",
-		Key:         "ABC",
-		Salt:        "CDE",
+		Id:             -1,
+		DisplayName:    "Test user",
+		Username:       "test",
+		HashedPassword: "we3E_ó0O",
 	}
 )
 
@@ -118,11 +117,10 @@ func TestUpdate(test *testing.T) {
 	usersData := setupUsersData(test)
 	createdUser := createTestUser(test, usersData)
 	modifiedUser := User{
-		Id:          createdUser.Id,
-		DisplayName: "Modified user",
-		Username:    "modified_user",
-		Key:         "JKL",
-		Salt:        "XYZ",
+		Id:             createdUser.Id,
+		DisplayName:    "Modified user",
+		Username:       "modified_user",
+		HashedPassword: "fb0w987gt",
 	}
 
 	updatedUser, updateErr := usersData.Update(modifiedUser)
@@ -144,11 +142,10 @@ func TestUpdateFail(test *testing.T) {
 
 	// Should not be able to update user with an invalid id
 	invalidModifiedUser := User{
-		Id:          createdUser.Id + 1,
-		DisplayName: "Modified user",
-		Username:    "modified_user",
-		Key:         "JKL",
-		Salt:        "XYZ",
+		Id:             createdUser.Id + 1,
+		DisplayName:    "Modified user",
+		Username:       "modified_user",
+		HashedPassword: "eroy246598",
 	}
 
 	_, invalidUpdateErr := usersData.Update(invalidModifiedUser)
