@@ -1,7 +1,8 @@
 package users
 
+type UserId int64
 type User struct {
-	Id             int64
+	Id             UserId
 	DisplayName    string
 	Username       string
 	HashedPassword string

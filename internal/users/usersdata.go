@@ -71,7 +71,7 @@ func (usersData *UsersData) Create(user User) (*User, error) {
 		return nil, err
 	}
 
-	user.Id = id
+	user.Id = UserId(id)
 	return &user, err
 }
 
@@ -86,7 +86,7 @@ func scanRowToUser(row *sql.Row) (*User, error) {
 	return &user, err
 }
 
-func (usersData *UsersData) UserFromId(userId int64) (*User, error) {
+func (usersData *UsersData) UserFromId(userId UserId) (*User, error) {
 	columns := newUsersDataTableColumns()
 	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", usersTableName, columns.Id)
 	row := usersData.backend.DB().QueryRow(query, userId)
@@ -132,7 +132,7 @@ func (usersData *UsersData) Update(user User) (*User, error) {
 	return &user, nil
 }
 
-func (usersData *UsersData) Delete(userId int64) error {
+func (usersData *UsersData) Delete(userId UserId) error {
 	columns := newUsersDataTableColumns()
 	query := fmt.Sprintf("DELETE FROM %s WHERE %s = ?", usersTableName, columns.Id)
 	result, err := usersData.backend.DB().Exec(query, userId)
