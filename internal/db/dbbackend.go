@@ -6,5 +6,5 @@ import (
 
 type DBBackend interface {
 	DB() *sql.DB
-	Open() error
+	Open(string) error
 }
