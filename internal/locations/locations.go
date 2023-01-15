@@ -20,6 +20,15 @@ var locations = map[LocationEnum]string{}
 
 const appRootDirName = "honcc"
 
+func createParentDirOnDisk(path string) {
+	locationDir := filepath.Dir(path)
+
+	mkdirErr := os.MkdirAll(locationDir, os.ModePerm)
+	if mkdirErr != nil {
+		log.Fatalf("Could not create parent dir for location: %s", path)
+	}
+}
+
 func initLocations() {
 	if len(locations) != 0 {
 		return
@@ -32,7 +41,9 @@ func initLocations() {
 	}
 
 	for name, relLocation := range relativeLocations {
-		locations[name] = filepath.Join(homeDir, appRootDirName, relLocation)
+		absoluteLocation := filepath.Join(homeDir, appRootDirName, relLocation)
+		createParentDirOnDisk(absoluteLocation)
+		locations[name] = absoluteLocation
 	}
 }
 
